@@ -4,30 +4,21 @@ Future<bool> getOtp(String inputEmail, String inputUsername) async {
   final supabase = Supabase.instance.client;
 
   try {
-    // Step 1: Try to find if username exists in your custom `users` table
     final userRow = await supabase
         .from('users')
-        .select('id') // same UUID as auth.users.id
+        .select('id') 
         .eq('username', inputUsername)
         .maybeSingle();
 
     String? targetEmail;
 
     if (userRow != null) {
-      // Step 2: If username exists, find their email from auth.users using ID
       final userId = userRow['id'];
-      // ⚠️ Cannot directly query 'auth.users' from client, unless RLS allows it
-      // Better: You should store email in your `users` table after signup
-      // Temporarily assume email is correct & matches input
-      targetEmail = inputEmail; // fallback if you can't access auth.users
+      targetEmail = inputEmail; 
     } else {
-      // Step 3: Check if email exists in auth
-      // This is also restricted by default; client SDK can't access auth.users
-      // So we assume input email is valid for now
       targetEmail = inputEmail;
     }
 
-    // Step 4: Send OTP
     await supabase.auth.signInWithOtp(
       email: targetEmail!,
       shouldCreateUser: userRow == null, // true only if new user
