@@ -1,0 +1,16 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+Future<bool> confirmOtp(String token, String email) async {
+
+  final supabase = Supabase.instance.client;
+  try {
+     await supabase.auth.verifyOTP(
+       type: OtpType.magiclink,
+       token: token,
+       email: email,
+     );
+     return true;
+   } 
+  catch (error) {
+     return false;
+   }
+}
