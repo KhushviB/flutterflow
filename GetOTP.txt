@@ -1,32 +1,11 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+Future getOtp(String email) async {
 
-Future<bool> getOtp(String inputEmail, String inputUsername) async {
-  final supabase = Supabase.instance.client;
+ final supabase = Supabase.instance.client;
 
-  try {
-    final userRow = await supabase
-        .from('users')
-        .select('id') 
-        .eq('username', inputUsername)
-        .maybeSingle();
+ await supabase.auth.signInWithOtp(
+   email: email,
+   shouldCreateUser: true,
+ );
 
-    String? targetEmail;
-
-    if (userRow != null) {
-      final userId = userRow['id'];
-      targetEmail = inputEmail; 
-    } else {
-      targetEmail = inputEmail;
-    }
-
-    await supabase.auth.signInWithOtp(
-      email: targetEmail!,
-      shouldCreateUser: userRow == null, // true only if new user
-    );
-
-    return true;
-  } catch (e) {
-    print("Error sending OTP: $e");
-    return false;
-  }
 }
