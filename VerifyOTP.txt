@@ -1,16 +1,34 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-Future<bool> confirmOtp(String token, String email) async {
 
+Future<bool> confirmOtp(String email, String token) async {
   final supabase = Supabase.instance.client;
+
   try {
-     await supabase.auth.verifyOTP(
-       type: OtpType.magiclink,
-       token: token,
-       email: email,
-     );
-     return true;
-   } 
-  catch (error) {
-     return false;
-   }
+    final response = await supabase.auth.verifyOTP(
+      type: OtpType.magiclink, // or OtpType.email if you're using email code
+      email: email,
+      token: token,
+    );
+
+    final userId = response.user?.id;
+
+    final existing = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+
+    if (existing == null) {
+      await supabase.from('users').insert({
+        'id': userId,
+        'username': 'some_username', // ideally pass this along
+        'bio': 'Write your bio',
+      });
+    }
+
+    return true;
+  } catch (e) {
+    print("OTP verification failed: $e");
+    return false;
+  }
 }
